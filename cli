@@ -1,0 +1,125 @@
+#!/usr/bin/env ruby
+require 'io/console'
+require './store'
+
+def getinput(config)
+  history = config[:history]
+  input   = ''
+  pos     = 0
+  loop do
+    case chr = STDIN.getch
+    when "\e"
+      key = chr << STDIN.read_nonblock(3) rescue nil
+      case key
+      when "\e[A"
+        if config[:save] < history.size
+          chars = input
+          chars.size.times { putc ?\b.ord }
+          chars.size.times { putc ?\s.ord }
+          chars.size.times { putc ?\b.ord }
+          input.replace history[config[:save]]
+          pos = input.size
+          print input
+          config[:save] += 1
+        end
+      when "\e[B"
+        if config[:save] >= 1
+          config[:save] -= 1
+          chars = input
+          chars.size.times { putc ?\b.ord }
+          chars.size.times { putc ?\s.ord }
+          chars.size.times { putc ?\b.ord }
+          chars = config[:save] == 0 ? '' : history[config[:save]-1]
+          input.replace chars
+          pos = input.size
+          print input
+        end
+      when "\e[C"
+        if pos < input.size
+          putc input[pos].ord
+          pos += 1
+        end
+      when "\e[D"
+        if pos >= 1
+          putc ?\b.ord
+          pos -= 1
+        end
+      end
+    when "\u007F" # Backspace
+      if pos >= 1
+        putc ?\b.ord
+        pos -= 1
+        input.slice! pos
+        chars = (input + ?\s)[pos..-1]
+        chars.each_byte { |c| putc c }
+        chars.size.times { putc ?\b.ord }
+      end
+    when "\r"     # Enter
+      history.unshift input.clone
+      if history.size > 100
+        history.pop!
+      end
+      config[:save] = 0
+      puts ''
+      break
+    else
+      input.insert pos, chr
+      slice = input[pos..-1]
+      print slice
+      (slice.size - 1).times { putc ?\b.ord }
+      pos += 1
+    end
+    #print chr.inspect
+  end
+  input
+end
+commands = {
+  login:        'login',
+  ls:           'ls [path]',
+  mkdir:        'mkdir path',
+  rmdir:        'rmdir path',
+  rmdir_f:      'rmdir_f path',
+  put:          'put local remote',
+  get:          'get remote local',
+  rm:           'rm path',
+  rm_f:         'rm_f path',
+  trash_rm:     'trash_rm path',
+  trash_rm_all: 'trash_rm_all',
+  help:         'help',
+  exit:         'exit'
+}
+config = {history: [], save: 0}
+store = Store.new
+quit = false
+while !quit
+  print '> '
+  input = getinput config
+  command, *params = input.split /\s/
+  if commands[command.to_sym].nil?
+    puts "  Invalid command: #{command.inspect}"
+  else
+    case command
+    when 'login';        store.login
+    when 'ls';           store.ls *params
+    when 'mkdir';        store.mkdir *params
+    when 'rmdir';        store.rmdir *params
+    when 'rmdir_f';      store.rmdir_f *params
+    when 'put';          store.put *params
+    when 'get';          store.get *params
+    when 'rm';           store.rm *params
+    when 'rm_f';         store.rm_f *params
+    when 'trash_rm';     store.trash_rm *params
+    when 'trash_rm_all'; store.trash_rm_all *params
+    when 'help'
+      puts '  Commands:'
+      commands.each do |command, desc|
+        puts "    #{command.to_s.ljust(14)}: #{desc}"
+      end
+    when 'exit'
+      STDOUT.oflush
+      quit = true
+      break
+    else
+    end
+  end
+end
