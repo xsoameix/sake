@@ -1,7 +1,29 @@
-.treeview-container {
-    background-color: rgb(80, 80, 80);
+@define-color sake_sidebar_bg #505050;
+@define-color sake_sidebar_fg #fff;
+@define-color sake_sidebar_selected_fg #fff;
+
+.primary-toolbar.toolbar GtkButton GtkImage {
+    padding: 4px 4px 5px;
+}
+.places {
+    /*background-color: @sake_sidebar_bg;*/
 }
 .treeview {
     background-color: transparent;
-    color: white;
+    /*
+    border-color:     @sake_sidebar_bg;
+    color:            @sake_sidebar_fg;*/
+    text-shadow: none;
+    icon-shadow: none;
+}
+.treeview:selected {
+    background-color: @selected_bg_color;
+    color:            @sake_sidebar_selected_fg;
+    text-shadow: 1px 1px alpha(black, 0.2);
+    icon-shadow: 1px 1px alpha(black, 0.2);
+}
+.grid {
+    -GtkProgressBar-min-horizontal-bar-width: 0;
+    -GtkProgressBar-min-horizontal-bar-height: 0;
+    -GtkProgressBar-xspacing: 0;
 }

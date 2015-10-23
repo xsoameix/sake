@@ -14,68 +14,51 @@ class App < Gtk::Window
     entry.text = '/'
     entry.margin_top = 2
 
-    width = 22
-    height = 24
+    path = Gtk::ToolItem.new
+    path.add entry
+    path.expand = true
+    path.margin_right = 12
 
     back    = Gtk::Button.new
     back.image = Gtk::Image.new(stock: Gtk::Stock::GO_BACK,
                                 size: Gtk::IconSize::MENU)
-    back.image.set_size_request width, height
-    back.style_context.add_class Gtk::STYLE_CLASS_RAISED
-    back.style_context.add_class Gtk::STYLE_CLASS_LINKED
     forward = Gtk::Button.new
     forward.image = Gtk::Image.new(stock: Gtk::Stock::GO_FORWARD,
                                    size: Gtk::IconSize::MENU)
-    forward.image.set_size_request width, height
-    forward.style_context.add_class Gtk::STYLE_CLASS_RAISED
-    forward.style_context.add_class Gtk::STYLE_CLASS_LINKED
     up      = Gtk::Button.new
     up.image = Gtk::Image.new(stock: Gtk::Stock::GO_UP,
                               size: Gtk::IconSize::MENU)
-    up.image.set_size_request width, height
-    up.style_context.add_class Gtk::STYLE_CLASS_RAISED
-    up.style_context.add_class Gtk::STYLE_CLASS_LINKED
 
     hbox = Gtk::Box.new :horizontal, 0
     hbox.add back
     hbox.add forward
     hbox.add up
-    hbox.style_context.add_class Gtk::STYLE_CLASS_PRIMARY_TOOLBAR
+    hbox.style_context.add_class Gtk::STYLE_CLASS_RAISED
+    hbox.style_context.add_class Gtk::STYLE_CLASS_LINKED
 
     tools = Gtk::ToolItem.new
     tools.add hbox
+    tools.margin_right = 12
 
     pixbuf = Gtk::IconTheme.default.load_icon 'list-add', 16, 0
     new_folder = Gtk::Button.new
     new_folder.image = Gtk::Image.new(pixbuf: pixbuf,
                                       size: Gtk::IconSize::MENU)
-    new_folder.image.set_size_request width, height
-    new_folder.style_context.add_class Gtk::STYLE_CLASS_RAISED
-    new_folder.style_context.add_class Gtk::STYLE_CLASS_LINKED
     new_folder.tooltip_text = 'New Folder'
     pixbuf = Gtk::IconTheme.default.load_icon 'document-new', 16, 0
     upload_folder = Gtk::Button.new
     upload_folder.image = Gtk::Image.new(pixbuf: pixbuf,
                                          size: Gtk::IconSize::MENU)
-    upload_folder.image.set_size_request width, height
-    upload_folder.style_context.add_class Gtk::STYLE_CLASS_RAISED
-    upload_folder.style_context.add_class Gtk::STYLE_CLASS_LINKED
     upload_folder.tooltip_text = 'Upload Folder'
     pixbuf = Gtk::IconTheme.default.load_icon 'folder-new', 16, 0
     upload_file = Gtk::Button.new
     upload_file.image = Gtk::Image.new(pixbuf: pixbuf,
                                        size: Gtk::IconSize::MENU)
-    upload_file.image.set_size_request width, height
-    upload_file.style_context.add_class Gtk::STYLE_CLASS_RAISED
-    upload_file.style_context.add_class Gtk::STYLE_CLASS_LINKED
     upload_file.tooltip_text = 'Upload File'
     pixbuf = Gtk::IconTheme.default.load_icon 'system-run', 16, 0
     setting = Gtk::Button.new
     setting.image = Gtk::Image.new(pixbuf: pixbuf,
                                    size: Gtk::IconSize::MENU)
-    setting.image.set_size_request width, height
-    setting.style_context.add_class Gtk::STYLE_CLASS_RAISED
-    setting.style_context.add_class Gtk::STYLE_CLASS_LINKED
     setting.tooltip_text = 'Setting'
 
     hbox = Gtk::Box.new :horizontal, 0
@@ -83,19 +66,17 @@ class App < Gtk::Window
     hbox.add upload_folder
     hbox.add upload_file
     hbox.add setting
-    hbox.style_context.add_class Gtk::STYLE_CLASS_PRIMARY_TOOLBAR
+    hbox.style_context.add_class Gtk::STYLE_CLASS_RAISED
+    hbox.style_context.add_class Gtk::STYLE_CLASS_LINKED
 
     preference = Gtk::ToolItem.new
     preference.add hbox
 
-    toolbar = Gtk::Box.new :horizontal, 12
-    toolbar.pack_start tools,      expand: false, fill: false, padding: 0
-    toolbar.pack_start entry,      expand: true,  fill: true,  padding: 0
-    toolbar.pack_start preference, expand: false, fill: false, padding: 0
-    toolbar.margin_left = 6
-    toolbar.margin_right = 6
-    toolbar.margin_bottom = 6
-    toolbar.style_context.junction_sides = Gtk::JunctionSides::BOTTOM
+    toolbar = Gtk::Toolbar.new
+    toolbar.add tools
+    toolbar.add path
+    toolbar.add preference
+    toolbar.style_context.add_class Gtk::STYLE_CLASS_PRIMARY_TOOLBAR
 
     padding_col = Gtk::TreeViewColumn.new
     padding_col.sizing = Gtk::TreeViewColumnSizing::FIXED
@@ -137,21 +118,22 @@ class App < Gtk::Window
         cell.visible = false
       end
     end
-    #location.sizing = Gtk::TreeViewColumnSizing::FIXED
-    #location.resizable = false
-    #location.expand = false
 
     last_col = Gtk::TreeViewColumn.new
-
-    pixbuf = Gtk::IconTheme.default.load_icon 'user-home', 16, 0
 
     treestore = Gtk::TreeStore.new Gdk::Pixbuf, String, Object, Object
     root_iter = treestore.append nil
     root_iter[1] = 'Bookmarks'
     root_iter[2] = true
+    pixbuf = Gtk::IconTheme.default.load_icon 'user-home', 16, 0
     location_iter = treestore.append root_iter
     location_iter[0] = pixbuf
     location_iter[1] = 'Home'
+    location_iter[3] = true
+    pixbuf = Gtk::IconTheme.default.load_icon 'folder', 16, 0
+    location_iter = treestore.append root_iter
+    location_iter[0] = pixbuf
+    location_iter[1] = 'document'
     location_iter[3] = true
 
     treeview = Gtk::TreeView.new
@@ -169,16 +151,40 @@ class App < Gtk::Window
           selection.unselect_path path
         end
       end
+      false
     end
     treeview.expand_all
+
+    label = Gtk::Label.new
+    label.text = '8.2TB / 10TB'
+
+    padding = Gtk::Box.new :horizontal, 0
+    padding.set_size_request -1, 10
+
+    usage = Gtk::ProgressBar.new
+    usage.fraction = 0.8
+    usage.style_context.add_class 'grid'
+    usage.margin_left = 18
+    usage.margin_right = 18
+    usage.set_size_request 30, 6
+
+    status = Gtk::Box.new :vertical, 0
+    status.pack_start usage,   expand: false, fill: false, padding: 0
+    status.pack_start padding, expand: false, fill: false, padding: 0
+    status.pack_start label,   expand: false, fill: false, padding: 0
+
+    grid = Gtk::Table.new 24, 12, true
+    grid.attach treeview, 0, 12,  0, 21
+    grid.attach status,   0, 12, 21, 24
 
     places = Gtk::ScrolledWindow.new nil, nil
     places.shadow_type = Gtk::ShadowType::NONE
     places.set_policy Gtk::PolicyType::NEVER, Gtk::PolicyType::AUTOMATIC
     places.style_context.junction_sides = (Gtk::JunctionSides::RIGHT |
                                            Gtk::JunctionSides::LEFT)
-    places.add treeview
-    places.style_context.add_class 'treeview-container'
+    places.add grid
+    places.style_context.add_class 'places'
+
     provider = Gtk::CssProvider.new
     display = Gdk::Display.default
     screen = display.default_screen
@@ -186,7 +192,7 @@ class App < Gtk::Window
       Gtk::StyleProvider::PRIORITY_APPLICATION
     provider.load_from_path 'assets/style.css'
 
-    liststore = Gtk::ListStore.new String, String, String, String
+    liststore = Gtk::ListStore.new Gdk::Pixbuf, String, String, String, String
 
     #iconview = Gtk::IconView.new
     #iconview.model = liststore
@@ -195,40 +201,47 @@ class App < Gtk::Window
     #iconview.item_orientation = Gtk::Orientation::HORIZONTAL
     #iconview.selection_mode = Gtk::SelectionMode::MULTIPLE
 
-    %w(gtk-file gtk-directory).each do |icon|
+    %w(gtk-directory gtk-file).each do |icon|
       iter = liststore.append
-      ['Label', '3 kb', 'Folder', '2014-02-20'].each_with_index do |value, index|
+      pixbuf = Gtk::IconTheme.default.load_icon icon, 16, 0
+      [pixbuf, 'Label', '3 kb', 'Folder', '2014-02-20'].each_with_index do |value, index|
         iter[index] = value
       end
     end
 
+    icon = Gtk::CellRendererPixbuf.new
     text = Gtk::CellRendererText.new
     filename = Gtk::TreeViewColumn.new
     filename.title = 'Name'
+    filename.pack_start icon, expand: false, fill: false, padding: 0
     filename.pack_start text, expand: false, fill: false, padding: 0
-    filename.set_attributes text, text: 0
+    filename.set_attributes icon, gicon: 0
+    filename.set_attributes text, text:  1
     filename.expand = true
+    filename.resizable = true
 
     text = Gtk::CellRendererText.new
     filesize = Gtk::TreeViewColumn.new
     filesize.title = 'Size'
     filesize.pack_start text, expand: false, fill: false, padding: 0
-    filesize.set_attributes text, text: 1
+    filesize.set_attributes text, text: 2
     filesize.expand = true
+    filesize.resizable = true
 
     text = Gtk::CellRendererText.new
     filetype = Gtk::TreeViewColumn.new
     filetype.title = 'Type'
     filetype.pack_start text, expand: false, fill: false, padding: 0
-    filetype.set_attributes text, text: 2
+    filetype.set_attributes text, text: 3
     filetype.expand = true
 
     text = Gtk::CellRendererText.new
     created = Gtk::TreeViewColumn.new
     created.title = 'Created Date'
     created.pack_start text, expand: false, fill: false, padding: 0
-    created.set_attributes text, text: 3
+    created.set_attributes text, text: 4
     created.expand = true
+    created.resizable = true
 
     new_folder = Gtk::MenuItem.new 'Create New Folder'
     upload_folder = Gtk::MenuItem.new 'Upload Folder'
@@ -250,7 +263,9 @@ class App < Gtk::Window
       if event.button == 3
         menu.popup nil, nil, event.button, event.time
       end
+      false
     end
+    treeview.rules_hint = true
 
     swindow = Gtk::ScrolledWindow.new nil, nil
     swindow.shadow_type = Gtk::ShadowType::NONE
@@ -271,7 +286,7 @@ class App < Gtk::Window
     add vbox
 
     set_title 'Sake'
-    set_default_size 500, 300
+    set_default_size 700, 400
     set_window_position Gtk::WindowPosition::CENTER
     set_icon 'assets/sake.png'
     signal_connect 'destroy' do
