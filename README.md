@@ -6,7 +6,28 @@ Storage services supported:
 
 *   MediaFire
 
-## Getting Started
+Platform supported:
+
+*   Linux
+*   Mac OS
+
+## Installation
+
+### Linux
+
+Install gems.
+
+    $ bundle install
+
+### Mac OS
+
+Install gtk3, icons, and gems.
+
+    $ brew install gtk+3 gnome-icon-theme
+    $ export PKG_CONFIG_PATH=/usr/local/opt/libffi/lib/pkgconfig
+    $ bundle install
+
+## Configuration
 
 Configure your accounts.
 
@@ -28,9 +49,10 @@ Configure your accounts.
         ]
     }
 
-Install gems and run the CLI.
+## Run
 
-    $ bundle install
+### Command Line Interface
+
     $ bundle exec ./cli /path/to/config.json
     > help       
       Commands:
@@ -54,3 +76,7 @@ Install gems and run the CLI.
     > rm /testfile
     > ls
                 - 2015-04-18T01:18:56Z test
+
+### Graphic User Interface
+
+    $ bundle exec ./gui /path/to/config.json

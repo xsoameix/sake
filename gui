@@ -201,7 +201,7 @@ class App < Gtk::Window
     #iconview.item_orientation = Gtk::Orientation::HORIZONTAL
     #iconview.selection_mode = Gtk::SelectionMode::MULTIPLE
 
-    %w(gtk-directory gtk-file).each do |icon|
+    %w(folder text-x-preview).each do |icon|
       iter = liststore.append
       pixbuf = Gtk::IconTheme.default.load_icon icon, 16, 0
       [pixbuf, 'Label', '3 kb', 'Folder', '2014-02-20'].each_with_index do |value, index|

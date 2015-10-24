@@ -2,9 +2,6 @@
 @define-color sake_sidebar_fg #fff;
 @define-color sake_sidebar_selected_fg #fff;
 
-.primary-toolbar.toolbar GtkButton GtkImage {
-    padding: 4px 4px 5px;
-}
 .places {
     /*background-color: @sake_sidebar_bg;*/
 }
